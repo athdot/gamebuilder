@@ -1,18 +1,99 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Hello Web - Processing.js Test</title>
-  <script src="processing.min.js"></script>
-  </head>
-  <body>
-  <h1>Processing.js Test</h1>
-  <p>This is my first Processing.js web-based sketch:</p>
-  <canvas data-processing-sources="data:text/plain;charset=utf-8;base64,dm9pZCBkcmF3KCl7DQogIHNpemUoMzAwLDMwMCk7DQogIGJhY2tncm91bmQoMCk7DQp9"></canvas>
-  <script>
-    try{
-    }catch(e){
-      alert("Error: " + e) 
-    }
-  </script>
-  </body>
-</html>
+
+<script type="text/javascript" src="https://athdot.github.io/gamebuilder/processing.min.js"></script>
+
+<textarea id="textarea_processing" style="width: 640px; height: 360px;"></textarea><br />
+<input type=button value="Run code: Process this!" onClick="process_this()">
+
+<input type=button value="Stop" onClick="
+  if (typeof process_run == 'object') {
+    process_run.exit();
+  }
+  this.disabled=true;
+"
+id=stop_button
+>
+
+<p>
+<canvas id='canvas1' style="border: 1px solid black;"></canvas>
+
+<p>
+<script>
+
+process_run = '';
+
+function process_this() {
+  document.getElementById('stop_button').disabled=false;
+  if (typeof process_run == 'object') {
+    process_run.exit();
+  }
+  var script_text = $('#textarea_processing').val();
+  var canvas=document.getElementById('canvas1');
+  if (process_run) {
+    process_run.exit();
+  }
+  if (script_text) {
+    process_run =  new Processing(canvas, script_text);
+  }
+}
+
+function run_sample(id) {
+  if (id) {
+    set_hash(id);
+  } else {
+    id = 'blue_rays'; // will run default demo
+  }
+  $('#textarea_processing').val( $('#'+id).text() );
+  process_this();
+}
+
+</script>
+
+<script type="application/processing" id="blue_rays">float position = 0;
+float x0=0;
+float y0=0;
+float radius=40;
+
+size(640, 400);
+background(0);
+
+// Create background starfield
+for (int x = 0; x <width; x++){
+  stroke(random(150));
+  point(random(width),random(height));
+}
+
+void draw() {
+  px = x0 +Math.sin(position * 2 * Math.PI)*random(radius);
+  py = y0 -Math.cos(position * 2 * Math.PI)*random(radius);
+  line (x0, y0, px, py);
+  position += 0.1;
+  if (random(100)>98) {
+    x0=random(width);
+    y0=random(height);
+    radius = random(80); // define new max star radius size
+    int alpha = 25; // color transparency
+    stroke(55+random(200),155+random(100),155+random(100), alpha);
+    position = 0; // reset radius counter
+  }
+}
+</script>
+
+<script>
+
+function set_hash(hash_value) {
+  var old_hash_fn = window.onhashchange;
+  window.onhashchange = function() { return false }; // stops listener
+  window.location.hash = '!' + hash_value; // hash bang
+  setTimeout(function() { window.onhashchange = old_hash_fn }, 100); // restart listener
+}
+
+window.onhashchange = function() { init_run_sample(); };
+
+function init_run_sample() {
+  var hashbang = window.location.hash.replace("#!", "");
+  run_sample(hashbang);
+}
+init_run_sample();
+
+
+</script>
